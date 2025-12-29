@@ -1,0 +1,42 @@
+// scripts/03_powerquery_m.txt
+// Power BI Power Query (M) - Load processed CSV + enforce types
+
+let
+    Source = Csv.Document(
+        File.Contents("C:\PATH\TO\YOUR\REPO\data\processed\spotify_clean.csv"),
+        [Delimiter=",", Columns=999, Encoding=65001, QuoteStyle=QuoteStyle.Csv]
+    ),
+    PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+
+    ChangedTypes = Table.TransformColumnTypes(
+        PromotedHeaders,
+        {
+            {"track_name", type text},
+            {"artist_name", type text},
+            {"album_name", type text},
+            {"album_type", type text},
+            {"release_date", type date},
+            {"release_year", Int64.Type},
+            {"release_month_num", Int64.Type},
+            {"release_month", type text},
+            {"release_year_month", type text},
+            {"duration_ms", Int64.Type},
+            {"duration_minutes", type number},
+            {"popularity", type number},
+            {"explicit", type logical}
+        }
+    ),
+
+    // Helpful flags used in visuals
+    AddExplicitLabel = Table.AddColumn(
+        ChangedTypes, "Explicit_Label",
+        each if [explicit] = true then "Explicit" else "Non-Explicit",
+        type text
+    ),
+
+    AddAlbumTypeClean = Table.TransformColumns(
+        AddExplicitLabel,
+        {{"album_type", each Text.Lower(Text.Trim(_)), type text}}
+    )
+in
+    AddAlbumTypeClean

@@ -1,0 +1,73 @@
+-- scripts/04_dax_measures.txt
+-- Paste into Power BI: Modeling > New measure
+
+-- KPIs
+Total Songs = COUNTROWS(Tracks)
+
+Distinct Artists = DISTINCTCOUNT(Tracks[artist_name])
+
+Distinct Songs = DISTINCTCOUNT(Tracks[track_name])
+
+Avg Popularity = AVERAGE(Tracks[popularity])
+
+Avg Duration Minutes =
+AVERAGE(Tracks[duration_minutes])
+
+-- Explicit vs Non-Explicit counts
+Explicit Songs =
+CALCULATE(
+    COUNTROWS(Tracks),
+    Tracks[explicit] = TRUE()
+)
+
+Non-Explicit Songs =
+CALCULATE(
+    COUNTROWS(Tracks),
+    Tracks[explicit] = FALSE()
+)
+
+-- Album type counts (single/album/compilation/other)
+Songs (Album Type) =
+COUNTROWS(Tracks)
+
+-- Popularity by Artist (for bar charts)
+Artist Popularity =
+AVERAGE(Tracks[popularity])
+
+-- Popularity by Song (for bar charts)
+Song Popularity =
+AVERAGE(Tracks[popularity])
+
+-- Distinct Songs by Year (for donut / card / trend visuals)
+Distinct Songs by Year =
+DISTINCTCOUNT(Tracks[track_name])
+
+-- Distinct Songs by Month (use release_month or release_month_num on axis)
+Distinct Songs by Month =
+DISTINCTCOUNT(Tracks[track_name])
+
+-- Optional: Popularity Trend by Month (line chart)
+Avg Popularity by Month =
+AVERAGE(Tracks[popularity])
+
+-- Helpful sorting column setup:
+-- Sort Tracks[release_month] by Tracks[release_month_num] in Data view (no DAX needed)
+
+-- If you have a Date table, these improve time intelligence (optional)
+-- Create a Date table (recommended)
+Date = CALENDAR(MIN(Tracks[release_date]), MAX(Tracks[release_date]))
+
+Year = YEAR('Date'[Date])
+Month Num = MONTH('Date'[Date])
+Month = FORMAT('Date'[Date], "MMM")
+
+-- Then relate Tracks[release_date] -> Date[Date]
+-- And use these measures:
+
+Avg Popularity (Date) = AVERAGE(Tracks[popularity])
+
+Distinct Songs (Date) =
+DISTINCTCOUNT(Tracks[track_name])
+
+Distinct Artists (Date) =
+DISTINCTCOUNT(Tracks[artist_name])
